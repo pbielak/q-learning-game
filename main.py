@@ -1,47 +1,22 @@
 """
 Reinforcement Learning based Tic-Tac-Toe
 """
-import argparse
-
+import matplotlib.pyplot as plt
 from rl_ttt import agents
 from rl_ttt import environment
-
-
-def get_args():
-    parser = argparse.ArgumentParser()
-
-    parser.add_argument('--agent',
-                        help='Type of agent to run',
-                        choices=['q-learning', 'supervised'],
-                        default='q-learning')
-
-    parser.add_argument('--steps',
-                        help='Number of training steps',
-                        default=100)
-
-    args = parser.parse_args()
-    return args
-
-
-def get_agent_cls(agent_type):
-    available_agents = {
-        'q-learning': agents.QLearningAgent,
-        'supervised': None  # TODO: implement it!
-    }
-
-    return available_agents[agent_type]
+from rl_ttt import gui
 
 
 def main():
-    args = get_args()
+    nb_steps = 20
 
-    env = environment.TicTacToeEnv()
+    g = gui.TicTacToeGUI()
+    env = environment.TicTacToeEnv(gui_callback=g.update_env_gui)
+    agent = agents.QLearningAgent(gui_callback=g.update_agent_gui)
 
-    agent_cls = get_agent_cls(args.agent)
-    agent = agent_cls()
-
-    agent.fit(env, nb_steps=10, verbose=2, visualize=True)
+    agent.fit(env, nb_steps=nb_steps, verbose=0, visualize=True)
 
 
 if __name__ == '__main__':
     main()
+    plt.show(block=True)
