@@ -1,14 +1,13 @@
 """
 RL environment
 """
-from rl import core
-
 from rl_ttt import game
+from rl_ttt import utils
 
 
-class TicTacToeEnv(core.Env):
+class TicTacToeEnv(object):
 
-    def __init__(self, gui_callback):
+    def __init__(self, gui_callback=utils.default_console_gui_callback):
         self.nb_step = 0
         self.game = game.TicTacToe()
         self.gui_callback = gui_callback
@@ -30,8 +29,7 @@ class TicTacToeEnv(core.Env):
                 reward = -1
         else:
             if self.game.is_terminal():
-                reward = 1 if self.game.has_won()[
-                                  1] == game.FieldStates.X_MARKER else -1
+                reward = 1 if self.game.has_won()[1] == game.FieldStates.X_MARKER else -1
             else:
                 reward = 0
 
@@ -51,7 +49,7 @@ class TicTacToeEnv(core.Env):
                 self.game.is_terminal(),
                 self.game.has_won())
 
-    def render(self, mode='human', close=False):
+    def render(self):
         fmt_str = 'Current step: {}\n' \
                   'Game: {}\n' \
                   'Current player: {}\n' \
@@ -65,16 +63,4 @@ class TicTacToeEnv(core.Env):
             self.game.has_won()
         )
 
-        if self.gui_callback:
-            self.gui_callback(self.game.board, msg)
-        else:
-            print(msg)
-
-    def seed(self, seed=None):
-        return
-
-    def configure(self, *args, **kwargs):
-        return
-
-    def close(self):
-        return
+        self.gui_callback(msg=msg, board=self.game.board)
