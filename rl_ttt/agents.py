@@ -2,54 +2,38 @@
 Agent implementations
 """
 import numpy as np
-from rl import core
 
 from rl_ttt.game import FieldStates
+from rl_ttt import utils
 
 
-class QLearningAgent(core.Agent):
-    compiled = True
+class QLearningAgent(object):
 
-    def __init__(self, gui_callback):
-        super(QLearningAgent, self).__init__()
-
+    def __init__(self, name, gui_callback=utils.default_console_gui_callback):
+        self.name = name
         self.gui_callback = gui_callback
 
     def forward(self, observation):
         # TODO
-        from time import sleep
-        sleep(1)
+        # from time import sleep
+        # sleep(1)
 
         board, _, _ = observation
         empty_idxs = [idx for idx, field in enumerate(board) if field == FieldStates.EMPTY_FIELD]
 
         if not empty_idxs:
+            print(self.name, 'forward: no action available!')
             return -1
 
-        return np.random.choice(empty_idxs)
+        chosen_action = np.random.choice(empty_idxs)
+        print(self.name, 'forward chosen:', chosen_action)
+        return chosen_action
 
     def backward(self, reward, terminal):
+        print(self.name, 'backward (', reward, terminal, ')')
         # TODO
 
-        fmt_str = 'Received reward: {}\n' \
-                  'Terminal: {}'
+        fmt_str = 'Received reward: {} Terminal: {}'
 
-        if self.gui_callback:
-            self.gui_callback(None, fmt_str.format(reward, terminal))
-        else:
-            print('Received reward:', reward)
-            print('Terminal', terminal)
-            print('-' * 30)
-
-    def load_weights(self, filepath):
-        return
-
-    def save_weights(self, filepath, overwrite=False):
-        return
-
-    def compile(self, optimizer, metrics=[]):
-        return
-
-    @property
-    def layers(self):
-        return
+        self.gui_callback(msg=fmt_str.format(reward, terminal),
+                          weights=None, reward=reward)
