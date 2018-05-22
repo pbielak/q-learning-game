@@ -1,6 +1,7 @@
 """
 Train/test runner for RL
 """
+from rl_ttt import utils
 
 
 class Runner(object):
@@ -10,17 +11,23 @@ class Runner(object):
         self.env = environment
         self.won = {'X': 0, 'O': 0}
 
-    def train(self, nb_steps):
+    def train(self, nb_steps=None, nb_episodes=None):
+        sc = utils.get_stop_condition(nb_steps, nb_episodes)
+
         step = 0
+        episode = 0
+
         observation = None
         reward = None
         done = None
 
-        while step < nb_steps:
-            print('ENV: Step = ', step)
+        while sc(step, episode):
+            print('[Runner] Step =', step)
             if observation is None:
                 observation = self.env.reset()
                 self.env.render()
+                episode += 1
+                print('[Runner] Episode =', episode)
 
             for agent in self.agents:
                 action = agent.forward(observation)
@@ -28,6 +35,7 @@ class Runner(object):
                 self.env.render()
                 if done:
                     break
+                assert reward == 0
                 agent.backward(reward, terminal=False)
 
             if done:
