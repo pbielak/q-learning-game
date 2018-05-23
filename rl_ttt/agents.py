@@ -17,6 +17,9 @@ def process_observation(observation):
 
 
 class Agent(object):
+    all_states = list(itertools.product(['X', 'O', ''], repeat=9))
+    all_actions = list(range(9))
+
     def __init__(self, name, gui_callback):
         self.name = name
         self.gui_callback = gui_callback
@@ -60,10 +63,8 @@ class QLearningAgent(Agent):
         self._init_q_table()
 
     def _init_q_table(self):
-        all_states = list(itertools.product(['X', 'O', ''], repeat=9))
-        all_actions = list(range(9))
-
-        for state, action in itertools.product(all_states, all_actions):
+        for state, action in itertools.product(self.all_states,
+                                               self.all_actions):
             self.q[(state, action)] = np.random.uniform()
 
     def _forward(self, board, possible_actions):
@@ -83,12 +84,32 @@ class QLearningAgent(Agent):
         gamma = self.discount_factor
         estimated_future_reward = np.max(
             [self.q[(self._current_observation, action)]
-             for action in list(range(9))]
+             for action in self.all_actions]
         )
 
         self.q[state_action_t] += alpha * (reward +
                                            gamma * estimated_future_reward
                                            - self.q[state_action_t])
+
+    def load_q_values(self, filename):
+        with open(filename, 'r') as f:
+            lines = f.read().split('\n')
+
+        for state_idx, state in enumerate(self.all_states):
+            q_values = [float(x) for x in lines[state_idx].split(';')]
+            for action_idx, action in enumerate(self.all_actions):
+                self.q[(state, action)] = q_values[action_idx]
+
+    def save_q_values(self, filename):
+        lines = [
+            ';'.join([str(self.q[(state, action)])
+                      for action in self.all_actions])
+            for state in self.all_states
+        ]
+
+        with open(filename, 'w') as f:
+            for line in lines:
+                f.write(line + '\n')
 
 
 class RandomAgent(Agent):
