@@ -6,7 +6,6 @@ import itertools
 import numpy as np
 
 from rl_ttt.game import FieldStates
-from rl_ttt import utils
 
 
 def process_observation(observation):
@@ -24,7 +23,6 @@ class Agent(object):
         self.name = name
         self.gui_callback = gui_callback
 
-    @utils.log_call(log_result=True)
     def forward(self, observation):
         board, possible_actions = process_observation(observation)
 
@@ -37,7 +35,6 @@ class Agent(object):
     def _forward(self, board, possible_actions):
         pass
 
-    @utils.log_call(log_args=True)
     def backward(self, reward, terminal):
         self._backward(reward, terminal)
         self.gui_callback(reward)
@@ -49,11 +46,12 @@ class Agent(object):
 class QLearningAgent(Agent):
 
     def __init__(self, name, gui_callback, learning_rate=0.01,
-                 discount_factor=0.5):
+                 discount_factor=0.5, eps=0.3):
         super(QLearningAgent, self).__init__(name, gui_callback)
 
         self.learning_rate = learning_rate
         self.discount_factor = discount_factor
+        self.eps = eps
         self.q = {}
 
         self._previous_observation = tuple([''] * 9)  # Initially board is empty
@@ -68,9 +66,12 @@ class QLearningAgent(Agent):
             self.q[(state, action)] = np.random.uniform()
 
     def _forward(self, board, possible_actions):
-        q_values_for_state = [(action, self.q[(board, action)])
-                              for action in possible_actions]
-        chosen_action = max(q_values_for_state, key=lambda aq: aq[1])[0]
+        if np.random.uniform() < self.eps:
+            chosen_action = np.random.choice(possible_actions)
+        else:
+            q_values_for_state = [(action, self.q[(board, action)])
+                                  for action in possible_actions]
+            chosen_action = max(q_values_for_state, key=lambda aq: aq[1])[0]
 
         self._previous_observation = self._current_observation
         self._current_observation = board
