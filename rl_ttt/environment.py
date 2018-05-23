@@ -1,14 +1,14 @@
 """
 RL environment
 """
-from rl_ttt import game
+from rl_ttt import game as ttt_game
 
 
 class TicTacToeEnv(object):
 
-    def __init__(self, gui_callback):
+    def __init__(self, game, gui_callback):
         self.nb_step = 0
-        self.game = game.TicTacToe()
+        self.game = game
         self.gui_callback = gui_callback
 
     def step(self, action):
@@ -16,29 +16,24 @@ class TicTacToeEnv(object):
         field_idx = action
 
         if field_idx >= 0:
-            if self.game.is_field_empty(field_idx):
-                self.game.set_field(field_idx, self.game.current_player)
+            assert self.game.is_field_empty(field_idx)
+            self.game.set_field(field_idx, self.game.current_player)
 
-                if self.game.is_terminal():
-                    reward = 1 if self.game.has_won()[1] == game.FieldStates.X_MARKER else -1
-                else:
-                    reward = 0
-
-            else:
-                reward = -1
-        else:
-            if self.game.is_terminal():
-                reward = 1 if self.game.has_won()[1] == game.FieldStates.X_MARKER else -1
-            else:
-                reward = 0
-
-        # TODO: convert observation to proper format (!)
         observation = self.game.board
-
+        reward = self._get_reward()
         done = self.game.is_terminal()
-        info = {}
+        info = {'status': self.game.status}
 
         return observation, reward, done, info
+
+    def _get_reward(self):
+        rewards = {
+            ttt_game.GameStatus.PLAYING: 0,
+            ttt_game.GameStatus.DRAW: 0,
+            ttt_game.GameStatus.X_WIN: 1,
+            ttt_game.GameStatus.O_WIN: -1
+        }
+        return rewards[self.game.status]
 
     def reset(self):
         self.game.reset()
@@ -48,14 +43,13 @@ class TicTacToeEnv(object):
         fmt_str = 'Current step: {}\n' \
                   'Game: {}\n' \
                   'Current player: {}\n' \
-                  'Is terminal: {} | Won:{}'
+                  'Game status: {}'
 
         msg = fmt_str.format(
             self.nb_step,
             list(map(lambda x: x.value, self.game.board)),
             self.game.current_player.value,
-            self.game.is_terminal(),
-            self.game.has_won()
+            self.game.status,
         )
 
         self.gui_callback(msg=msg, board=self.game.board)
