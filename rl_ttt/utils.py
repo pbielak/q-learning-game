@@ -23,6 +23,8 @@ def get_stop_condition(*upper_limits):
         raise ValueError('At lest one upper limit must be set!')
 
     def inner(*current_values):
-        return all(curr < limit for curr, limit in zip(current_values, upper_limits) if limit is not None)
+        return all(curr < limit
+                   for curr, limit in zip(current_values, upper_limits)
+                   if limit is not None)
 
     return inner

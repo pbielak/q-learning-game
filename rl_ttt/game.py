@@ -10,6 +10,13 @@ class FieldStates(enum.Enum):
     O_MARKER = 'O'
 
 
+class GameStatus(enum.Enum):
+    PLAYING = 0
+    DRAW = 1
+    X_WIN = 2
+    O_WIN = 3
+
+
 class TicTacToe(object):
     BOARD_SIZE = 3
 
@@ -41,7 +48,14 @@ class TicTacToe(object):
     def is_field_empty(self, field_idx):
         return self.board[field_idx] == FieldStates.EMPTY_FIELD
 
-    def has_won(self):
+    def is_terminal(self):
+        return self.status != GameStatus.PLAYING
+
+    def _check_all_equal(self, indexes):
+        sublist = [self.board[idx] for idx in indexes]
+        return len(set(sublist)) <= 1
+
+    def _get_match(self):
         indexes = [
             (0, 1, 2), (3, 4, 5), (6, 7, 8),  # ROWS
             (0, 3, 6), (1, 4, 7), (2, 5, 8),  # COLUMNS
@@ -49,19 +63,33 @@ class TicTacToe(object):
         ]
 
         for idx_tuple in indexes:
-            if self._check_all_equal(idx_tuple) and \
-                        self.board[idx_tuple[0]] != FieldStates.EMPTY_FIELD:
-                return True, self.board[idx_tuple[0]]
+            field_status = self.board[idx_tuple[0]]
+            all_equal = self._check_all_equal(idx_tuple)
+            if all_equal and field_status != FieldStates.EMPTY_FIELD:
+                return field_status
 
-        return False, None
+        return None
 
-    def is_terminal(self):
-        nb_empty_fields = self.board.count(FieldStates.EMPTY_FIELD)
-        return self.has_won()[0] or nb_empty_fields == 0
+    def _empty_fields_present(self):
+        return self.board.count(FieldStates.EMPTY_FIELD) > 0
 
-    def _check_all_equal(self, indexes):
-        sublist = [self.board[idx] for idx in indexes]
-        return len(set(sublist)) <= 1
+    @property
+    def status(self):
+        match = self._get_match()
+        empty_fields_present = self._empty_fields_present()
+
+        if match:
+            if match.value == FieldStates.X_MARKER.value:
+                return GameStatus.X_WIN
+
+            if match.value == FieldStates.O_MARKER.value:
+                return GameStatus.O_WIN
+
+        else:
+            if not empty_fields_present:
+                return GameStatus.DRAW
+
+            return GameStatus.PLAYING
 
     @property
     def current_player(self):
