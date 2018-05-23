@@ -10,10 +10,8 @@ from rl_ttt import gui as ttt_gui
 from rl_ttt import runner as ttt_runner
 
 
-def run_experiment(visualize=False, load_weights=False, save_weights=False):
-    nb_steps = None  # 20000
-    nb_episodes = 1000
-
+def run_experiment(nb_episodes=5000, visualize=False,
+                   load_weights=False, save_weights=False):
     if visualize:
         gui = ttt_gui.TicTacToeGUI()
     else:
@@ -24,7 +22,10 @@ def run_experiment(visualize=False, load_weights=False, save_weights=False):
 
     q_learning_agent = ttt_agents.QLearningAgent(
         name='AGENT_X',
-        gui_callback=lambda r: gui.update_agent_gui(r, 'X')
+        gui_callback=lambda r: gui.update_agent_gui(r, 'X'),
+        learning_rate=0.001,
+        discount_factor=0.6,
+        eps=0.2
     )
 
     if load_weights:
@@ -39,7 +40,7 @@ def run_experiment(visualize=False, load_weights=False, save_weights=False):
     agents = [q_learning_agent, random_agent]
 
     runner = ttt_runner.Runner(agents, env)
-    runner.train(nb_steps=nb_steps, nb_episodes=nb_episodes)
+    runner.train(nb_episodes=nb_episodes)
 
     if save_weights:
         q_learning_agent.save_q_values('data/q_values.save')
@@ -47,7 +48,8 @@ def run_experiment(visualize=False, load_weights=False, save_weights=False):
 
 
 if __name__ == '__main__':
-    run_experiment(visualize=False,
-                   load_weights=False,
+    run_experiment(nb_episodes=1000,
+                   visualize=False,
+                   load_weights=True,
                    save_weights=True)
     plt.show(block=True)

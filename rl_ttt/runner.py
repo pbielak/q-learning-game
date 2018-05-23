@@ -2,9 +2,9 @@
 Train/test runner for RL
 """
 import numpy as np
+from tqdm import tqdm
 
 from rl_ttt import game
-from rl_ttt import utils
 
 
 class Runner(object):
@@ -18,10 +18,13 @@ class Runner(object):
             game.GameStatus.DRAW: 0,
         }
 
-    def train(self, nb_steps=None, nb_episodes=None):
-        sc = utils.get_stop_condition(nb_steps, nb_episodes)
+    def train(self, nb_episodes=None):
+        progress_bar = tqdm(desc='Episode/Game', total=nb_episodes, position=0)
 
-        step = 0
+        x_wins_pb = tqdm(desc='X Wins', total=nb_episodes, position=2)
+        o_wins_pb = tqdm(desc='O Wins', total=nb_episodes, position=3)
+        draws_pb = tqdm(desc='Draws', total=nb_episodes, position=4)
+
         episode = 0
 
         observation = None
@@ -29,13 +32,12 @@ class Runner(object):
         done = None
         info = None
 
-        while sc(step, episode):
-            print('[Runner] Step =', step)
+        while episode < nb_episodes:
             if observation is None:
                 observation = self.env.reset()
                 self.env.render()
                 episode += 1
-                print('[Runner] Episode =', episode)
+                progress_bar.update(1)
 
             for agent in self.agents:
                 action = agent.forward(observation)
@@ -48,14 +50,22 @@ class Runner(object):
 
             if done:
                 self.game_results[info['status']] += 1
+                if info['status'] == game.GameStatus.X_WIN:
+                    x_wins_pb.update(1)
+                elif info['status'] == game.GameStatus.O_WIN:
+                    o_wins_pb.update(1)
+                elif info['status'] == game.GameStatus.DRAW:
+                    draws_pb.update(1)
 
                 for agent, reward_multiplier in zip(self.agents, [1, -1]):
                     agent.forward(observation)
                     agent.backward(reward_multiplier * reward, terminal=True)
                 observation = None
 
-            step += 1
-
+        progress_bar.close()
+        x_wins_pb.close()
+        o_wins_pb.close()
+        draws_pb.close()
         self._print_stats()
 
     def test(self):
@@ -68,7 +78,8 @@ class Runner(object):
 
         total_games = x_wins + o_wins + draws
 
-        fmt_str = "X_WINS\t{}\t{} (%)\n" \
+        fmt_str = "\n\n\n\n\n" \
+                  "X_WINS\t{}\t{} (%)\n" \
                   "O_WINS\t{}\t{} (%)\n" \
                   "DRAW\t{}\t{} (%)"
 
