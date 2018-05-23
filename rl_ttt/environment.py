@@ -2,12 +2,11 @@
 RL environment
 """
 from rl_ttt import game
-from rl_ttt import utils
 
 
 class TicTacToeEnv(object):
 
-    def __init__(self, gui_callback=utils.default_console_gui_callback):
+    def __init__(self, gui_callback):
         self.nb_step = 0
         self.game = game.TicTacToe()
         self.gui_callback = gui_callback
@@ -34,9 +33,7 @@ class TicTacToeEnv(object):
                 reward = 0
 
         # TODO: convert observation to proper format (!)
-        observation = (self.game.board,
-                       self.game.is_terminal(),
-                       self.game.has_won())
+        observation = self.game.board
 
         done = self.game.is_terminal()
         info = {}
@@ -45,9 +42,7 @@ class TicTacToeEnv(object):
 
     def reset(self):
         self.game.reset()
-        return (self.game.board,
-                self.game.is_terminal(),
-                self.game.has_won())
+        return self.game.board
 
     def render(self):
         fmt_str = 'Current step: {}\n' \
