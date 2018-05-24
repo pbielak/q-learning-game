@@ -4,52 +4,100 @@ Reinforcement Learning based Tic-Tac-Toe
 import matplotlib.pyplot as plt
 
 from rl_ttt import agents as ttt_agents
+from rl_ttt import config as ttt_cfg
 from rl_ttt import environment as ttt_env
 from rl_ttt import game as ttt_game
-from rl_ttt import gui as ttt_gui
 from rl_ttt import runner as ttt_runner
+from rl_ttt import stats as ttt_stats
+from rl_ttt import gui as ttt_gui
 
 
-def run_experiment(nb_episodes=5000, visualize=False,
-                   load_weights=False, save_weights=False):
-    if visualize:
-        gui = ttt_gui.TicTacToeGUI()
-    else:
-        gui = ttt_gui.GUI()
+def get_cfg():
+    cfg = ttt_cfg.ExperimentConfig(nb_episodes=1000,
+                                   visualize=True)
+
+    cfg.add_q_learning_agent(marker_type='X',
+                             learning_rate=0.001,
+                             discount_factor=0.6,
+                             eps=0.2,
+                             load_weights=False,
+                             save_weights=False)
+
+    cfg.add_random_agent(marker_type='O')
+
+    return cfg
+
+
+def make_agents(cfg, gui):
+    agents = []
+
+    for agent_cfg in cfg.agents_configs:
+        if isinstance(agent_cfg, ttt_cfg.QLearningAgentConfig):
+            agent = ttt_agents.q_learning.from_config(agent_cfg,
+                                                      gui.update_agent_gui)
+
+            if agent_cfg.load_weights:
+                agent.load_q_values(
+                    'data/%s_q_values.save' % agent_cfg.marker_type
+                )
+                print('Loaded q values for %s!' % agent_cfg.marker_type)
+
+            agents.append(agent)
+        elif isinstance(agent_cfg, ttt_cfg.RandomAgentConfig):
+            agent = ttt_agents.random.from_config(
+                agent_cfg, gui.update_agent_gui
+            )
+            agents.append(agent)
+        else:
+            raise RuntimeError('Config %s not recognized' % type(agent_cfg))
+
+    return agents
+
+
+def get_gui(cfg):
+    if cfg.visualize:
+        return ttt_gui.real.TicTacToeGUI(cfg)
+
+    return ttt_gui.console.ConsoleGUI(cfg)
+
+
+def on_experiment_end(agents, cfg):
+    agents_map = {}
+    for agent in agents:
+        agents_map[agent.marker_type] = agent
+
+    for agent_cfg in cfg.agents_configs:
+        if isinstance(agent_cfg, ttt_cfg.QLearningAgentConfig) and \
+                agent_cfg.save_weights:
+            agents_map[agent_cfg.marker_type].save_q_values(
+                'data/%s_q_values.save' % agent_cfg.marker_type
+            )
+            print('Saved q values for %s!' % agent_cfg.marker_type)
+
+
+def run_experiment():
+    cfg = get_cfg()
+
+    stats = ttt_stats.Stats()
 
     game = ttt_game.TicTacToe()
+    gui = get_gui(cfg)
     env = ttt_env.TicTacToeEnv(game=game, gui_callback=gui.update_env_gui)
 
-    q_learning_agent = ttt_agents.QLearningAgent(
-        name='AGENT_X',
-        gui_callback=lambda r: gui.update_agent_gui(r, 'X'),
-        learning_rate=0.001,
-        discount_factor=0.6,
-        eps=0.2
-    )
+    gui.draw()
 
-    if load_weights:
-        q_learning_agent.load_q_values('data/q_values.save')
-        print('Loaded q values!')
+    agents = make_agents(cfg, gui)
 
-    random_agent = ttt_agents.RandomAgent(
-        name='AGENT_O',
-        gui_callback=lambda r: gui.update_agent_gui(r, 'O')
-    )
+    runner = ttt_runner.Runner(agents, env, stats, gui.update_stats)
+    runner.train(nb_episodes=cfg.nb_episodes)
 
-    agents = [q_learning_agent, random_agent]
+    on_experiment_end(agents, cfg)
 
-    runner = ttt_runner.Runner(agents, env)
-    runner.train(nb_episodes=nb_episodes)
+    stats.print()
 
-    if save_weights:
-        q_learning_agent.save_q_values('data/q_values.save')
-        print('Saved q values!')
+    if cfg.visualize:
+        plt.show(block=True)
 
 
 if __name__ == '__main__':
-    run_experiment(nb_episodes=1000,
-                   visualize=False,
-                   load_weights=True,
-                   save_weights=True)
-    plt.show(block=True)
+    run_experiment()
