@@ -41,14 +41,10 @@ class TicTacToeEnv(object):
 
     def render(self):
         fmt_str = 'Current step: {}\n' \
-                  'Game: {}\n' \
-                  'Current player: {}\n' \
                   'Game status: {}'
 
         msg = fmt_str.format(
             self.nb_step,
-            list(map(lambda x: x.value, self.game.board)),
-            self.game.current_player.value,
             self.game.status,
         )
 
