@@ -105,3 +105,6 @@ ENV/
 
 # Custom
 data/*.save
+data/*.png
+!data/nn_model.save
+!data/nn_plots.png

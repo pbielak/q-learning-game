@@ -29,7 +29,7 @@ class Runner(object):
                 self.env.render()
                 if done:
                     break
-                assert reward == 0
+
                 agent.backward(reward, terminal=False)
 
             if done:

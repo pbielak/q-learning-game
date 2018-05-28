@@ -13,16 +13,16 @@ from rl_ttt import gui as ttt_gui
 
 
 def get_cfg():
-    cfg = ttt_cfg.ExperimentConfig(nb_episodes=1000,
+    cfg = ttt_cfg.ExperimentConfig(nb_episodes=5000,
                                    visualize=False)
 
     cfg.add_q_learning_agent(marker_type='X',
                              learning_rate=0.01,
                              discount_factor=0.5,
-                             eps=0.1,
+                             eps=0,
                              load_weights=False,
                              save_weights=False,
-                             batch_mode=True)
+                             batch_mode=False)
 
     cfg.add_random_agent(marker_type='O')
 
@@ -80,7 +80,8 @@ def run_experiment():
 
     game = ttt_game.TicTacToe()
     gui = get_gui(cfg, stats)
-    env = ttt_env.TicTacToeEnv(game=game, gui_callback=gui.update_env_gui)
+    env = ttt_env.TicTacToeEnv(game=game, gui_callback=gui.update_env_gui,
+                               reward_model='supervised')
 
     agents = make_agents(cfg, stats)
 
