@@ -14,14 +14,14 @@ from rl_ttt import gui as ttt_gui
 
 def get_cfg():
     cfg = ttt_cfg.ExperimentConfig(nb_episodes=1000,
-                                   visualize=True)
+                                   visualize=False)
 
     cfg.add_q_learning_agent(marker_type='X',
                              learning_rate=0.001,
                              discount_factor=0.6,
                              eps=0.2,
                              load_weights=False,
-                             save_weights=False,
+                             save_weights=True,
                              batch_mode=True)
 
     cfg.add_random_agent(marker_type='O')
@@ -29,13 +29,12 @@ def get_cfg():
     return cfg
 
 
-def make_agents(cfg, gui):
+def make_agents(cfg, stats):
     agents = []
 
     for agent_cfg in cfg.agents_configs:
         if isinstance(agent_cfg, ttt_cfg.QLearningAgentConfig):
-            agent = ttt_agents.q_learning.from_config(agent_cfg,
-                                                      gui.update_agent_gui)
+            agent = ttt_agents.q_learning.from_config(agent_cfg, stats)
 
             if agent_cfg.load_weights:
                 agent.load_q_values(
@@ -45,9 +44,7 @@ def make_agents(cfg, gui):
 
             agents.append(agent)
         elif isinstance(agent_cfg, ttt_cfg.RandomAgentConfig):
-            agent = ttt_agents.random.from_config(
-                agent_cfg, gui.update_agent_gui
-            )
+            agent = ttt_agents.random.from_config(agent_cfg, stats)
             agents.append(agent)
         else:
             raise RuntimeError('Config %s not recognized' % type(agent_cfg))
@@ -55,11 +52,11 @@ def make_agents(cfg, gui):
     return agents
 
 
-def get_gui(cfg):
+def get_gui(cfg, stats):
     if cfg.visualize:
-        return ttt_gui.real.TicTacToeGUI(cfg)
+        return ttt_gui.window.WindowGUI(cfg, stats)
 
-    return ttt_gui.console.ConsoleGUI(cfg)
+    return ttt_gui.console.ConsoleGUI(cfg, stats)
 
 
 def on_experiment_end(agents, cfg):
@@ -82,19 +79,19 @@ def run_experiment():
     stats = ttt_stats.Stats()
 
     game = ttt_game.TicTacToe()
-    gui = get_gui(cfg)
+    gui = get_gui(cfg, stats)
     env = ttt_env.TicTacToeEnv(game=game, gui_callback=gui.update_env_gui)
 
-    agents = make_agents(cfg, gui)
+    agents = make_agents(cfg, stats)
 
-    runner = ttt_runner.Runner(agents, env, stats, gui.update_stats)
+    runner = ttt_runner.Runner(agents, env, stats, gui.refresh)
 
     gui.draw()
     runner.train(nb_episodes=cfg.nb_episodes)
 
     on_experiment_end(agents, cfg)
 
-    stats.print()
+    stats.summary()
 
     if cfg.visualize:
         plt.show(block=True)

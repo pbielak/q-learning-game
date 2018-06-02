@@ -33,14 +33,14 @@ class Runner(object):
                 agent.backward(reward, terminal=False)
 
             if done:
-                self.stats.game_results[info['status']] += 1
+                self.stats.increment_game_result(info['status'])
 
                 for agent, reward_multiplier in zip(self.agents, [1, -1]):
                     agent.forward(observation)
                     agent.backward(reward_multiplier * reward, terminal=True)
                 observation = None
 
-            self.gui_callback(self.stats)
+            self.gui_callback()
 
     def test(self):
         raise NotImplementedError()

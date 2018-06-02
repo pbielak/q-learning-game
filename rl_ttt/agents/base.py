@@ -25,11 +25,9 @@ class Agent(object):
     all_states = list(itertools.product(['', 'X', 'O'], repeat=9))
     all_actions = list(range(9))
 
-    def __init__(self, marker_type, gui_callback):
+    def __init__(self, marker_type, stats):
         self.marker_type = marker_type
-        self.gui_callback = lambda reward, q_values: gui_callback(reward,
-                                                                  q_values,
-                                                                  marker_type)
+        self.stats = stats
 
     def forward(self, observation):
         board, possible_actions = process_observation(observation)
@@ -46,8 +44,10 @@ class Agent(object):
     def backward(self, reward, terminal):
         self._backward(reward, terminal)
 
-        q_values = list(self.q.values()) if hasattr(self, 'q') else None
-        self.gui_callback(reward, q_values)
+        if terminal:
+            q_values = list(self.q.values()) if hasattr(self, 'q') else None
+            self.stats.add_mean_q(self.marker_type, q_values)
+            self.stats.add_reward(self.marker_type, reward)
 
     def _backward(self, reward, terminal):
         pass

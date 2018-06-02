@@ -40,12 +40,5 @@ class TicTacToeEnv(object):
         return self.game.board
 
     def render(self):
-        fmt_str = 'Current step: {}\n' \
-                  'Game status: {}'
-
-        msg = fmt_str.format(
-            self.nb_step,
-            self.game.status,
-        )
-
+        msg = f'Game status: {self.game.status}'
         self.gui_callback(msg=msg, board=self.game.board)
