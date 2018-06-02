@@ -12,10 +12,10 @@ class ExperimentConfig(object):
         self.agents_configs = []
 
     def add_q_learning_agent(self, marker_type, learning_rate, discount_factor,
-                             eps, load_weights, save_weights):
+                             eps, load_weights, save_weights, batch_mode):
         self.agents_configs.append(
             QLearningAgentConfig(marker_type, learning_rate, discount_factor,
-                                 eps, load_weights, save_weights)
+                                 eps, load_weights, save_weights, batch_mode)
         )
 
         assert len(self.agents_configs) <= 2
@@ -32,6 +32,7 @@ QLearningAgentConfig = namedtuple('QLearningAgentConfig', ['marker_type',
                                                            'discount_factor',
                                                            'eps',
                                                            'load_weights',
-                                                           'save_weights'])
+                                                           'save_weights',
+                                                           'batch_mode'])
 
 RandomAgentConfig = namedtuple('RandomAgentConfig', ['marker_type'])

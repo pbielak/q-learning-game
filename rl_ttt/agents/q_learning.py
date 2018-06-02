@@ -10,23 +10,22 @@ from rl_ttt.agents import base
 
 def from_config(cfg, gui):
     return QLearningAgent(cfg.marker_type, gui, cfg.learning_rate,
-                          cfg.discount_factor, cfg.eps)
+                          cfg.discount_factor, cfg.eps, cfg.batch_mode)
 
 
 class QLearningAgent(base.Agent):
 
     def __init__(self, marker_type, gui_callback, learning_rate=0.01,
-                 discount_factor=0.5, eps=0.3):
+                 discount_factor=0.5, eps=0.3, batch_mode=False):
         super(QLearningAgent, self).__init__(marker_type, gui_callback)
 
         self.learning_rate = learning_rate
         self.discount_factor = discount_factor
         self.eps = eps
+        self.batch_mode = batch_mode
         self.q = {}
 
-        self._previous_observation = tuple([''] * 9)  # Initially board is empty
-        self._current_observation = tuple([''] * 9)
-        self._chosen_action = None
+        self.history = []
 
         self._init_q_table()
 
@@ -43,26 +42,43 @@ class QLearningAgent(base.Agent):
                                   for action in possible_actions]
             chosen_action = max(q_values_for_state, key=lambda aq: aq[1])[0]
 
-        self._previous_observation = self._current_observation
-        self._current_observation = board
-        self._chosen_action = chosen_action
+        self.history.append((board, chosen_action))
 
         return chosen_action
 
-    def backward(self, reward, terminal):
-        state_action_t = (self._previous_observation, self._chosen_action)
+    def _backward(self, reward, terminal):
+        if self.batch_mode:
+            if not terminal:
+                return
+
+            for idx in range(len(self.history) - 1):
+                s_t, a_t = self.history[idx]
+                s_t_1, _ = self.history[idx + 1]
+                self._update_q_value(s_t, a_t, s_t_1, reward)
+
+        else:
+            self.history = self.history[-2:]
+
+            if len(self.history) != 2:
+                # This happens when a new game was started (only the initial
+                # observation will be present. We need to wait for the next one.
+                return
+
+            s_t, a_t = self.history[0]
+            s_t_1, _ = self.history[1]
+
+            self._update_q_value(s_t, a_t, s_t_1, reward)
+
+        if terminal:
+            self.history = []
+
+    def _update_q_value(self, s_t, a_t, s_t_1, r):
         alpha = self.learning_rate
         gamma = self.discount_factor
-        estimated_future_reward = np.max(
-            [self.q[(self._current_observation, action)]
-             for action in self.all_actions]
-        )
+        r_t_1 = np.max([self.q[(s_t_1, action)]
+                        for action in base.get_possible_actions(s_t_1)])
 
-        self.q[state_action_t] += alpha * (reward +
-                                           gamma * estimated_future_reward
-                                           - self.q[state_action_t])
-
-        self.gui_callback(reward, list(self.q.values()))
+        self.q[(s_t, a_t)] += alpha * (r + gamma * r_t_1 - self.q[(s_t, a_t)])
 
     def load_q_values(self, filename):
         with open(filename, 'r') as f:

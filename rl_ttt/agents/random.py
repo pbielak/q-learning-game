@@ -18,5 +18,5 @@ class RandomAgent(base.Agent):
     def _forward(self, board, possible_actions):
         return np.random.choice(possible_actions)
 
-    def backward(self, reward, terminal):
-        self.gui_callback(reward, None)
+    def _backward(self, reward, terminal):
+        return
