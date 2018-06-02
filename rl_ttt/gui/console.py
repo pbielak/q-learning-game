@@ -12,11 +12,24 @@ class ConsoleGUI(base.GUI):
     def __init__(self, cfg):
         super(ConsoleGUI, self).__init__(cfg)
 
+        self.episode_pb = None
+        self.x_wins_pb = None
+        self.o_wins_pb = None
+        self.draws_pb = None
+
+    def draw(self):
         self.episode_pb = tqdm(desc='Episode/Game',
-                               total=cfg.nb_episodes, position=0)
-        self.x_wins_pb = tqdm(desc='X Wins', total=cfg.nb_episodes, position=2)
-        self.o_wins_pb = tqdm(desc='O Wins', total=cfg.nb_episodes, position=3)
-        self.draws_pb = tqdm(desc='Draws', total=cfg.nb_episodes, position=4)
+                               total=self.cfg.nb_episodes,
+                               position=0)
+        self.x_wins_pb = tqdm(desc='X Wins',
+                              total=self.cfg.nb_episodes,
+                              position=2)
+        self.o_wins_pb = tqdm(desc='O Wins',
+                              total=self.cfg.nb_episodes,
+                              position=3)
+        self.draws_pb = tqdm(desc='Draws',
+                             total=self.cfg.nb_episodes,
+                             position=4)
 
     def update_stats(self, stats):
         self.episode_pb.update(stats.episode - self.episode_pb.n)

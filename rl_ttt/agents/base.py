@@ -6,10 +6,18 @@ import itertools
 from rl_ttt import game
 
 
+def to_board(observation):
+    return tuple([field.value for field in observation])
+
+
+def get_possible_actions(board):
+    return [idx for idx, field in enumerate(board)
+            if field == game.FieldStates.EMPTY_FIELD.value]
+
+
 def process_observation(observation):
-    board = tuple([field.value for field in observation])
-    possible_actions = [idx for idx, field in enumerate(board)
-                        if field == game.FieldStates.EMPTY_FIELD.value]
+    board = to_board(observation)
+    possible_actions = get_possible_actions(board)
     return board, possible_actions
 
 
@@ -36,4 +44,10 @@ class Agent(object):
         pass
 
     def backward(self, reward, terminal):
+        self._backward(reward, terminal)
+
+        q_values = list(self.q.values()) if hasattr(self, 'q') else None
+        self.gui_callback(reward, q_values)
+
+    def _backward(self, reward, terminal):
         pass

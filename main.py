@@ -21,7 +21,8 @@ def get_cfg():
                              discount_factor=0.6,
                              eps=0.2,
                              load_weights=False,
-                             save_weights=False)
+                             save_weights=False,
+                             batch_mode=True)
 
     cfg.add_random_agent(marker_type='O')
 
@@ -84,11 +85,11 @@ def run_experiment():
     gui = get_gui(cfg)
     env = ttt_env.TicTacToeEnv(game=game, gui_callback=gui.update_env_gui)
 
-    gui.draw()
-
     agents = make_agents(cfg, gui)
 
     runner = ttt_runner.Runner(agents, env, stats, gui.update_stats)
+
+    gui.draw()
     runner.train(nb_episodes=cfg.nb_episodes)
 
     on_experiment_end(agents, cfg)
