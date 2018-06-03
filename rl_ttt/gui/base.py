@@ -5,17 +5,22 @@ Tic-Tac-Toe GUI
 
 class GUI(object):
 
-    def __init__(self, cfg):
+    def __init__(self, cfg, stats):
         self.cfg = cfg
+        self.stats = stats
 
     def draw(self):
         pass
 
+    def refresh(self):
+        self._refresh_agent_gui()
+        self._refresh_game_outcomes()
+
     def update_env_gui(self, **kwargs):
         pass
 
-    def update_agent_gui(self, reward, q_values, agent_name):
+    def _refresh_agent_gui(self):
         pass
 
-    def update_stats(self, stats):
+    def _refresh_game_outcomes(self):
         pass
