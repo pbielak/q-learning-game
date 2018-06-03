@@ -3,6 +3,7 @@ Matplotlib-based GUI
 """
 import matplotlib.pyplot as plt
 from matplotlib import gridspec
+import numpy as np
 
 from rl_ttt.gui import base
 from rl_ttt import game
@@ -105,11 +106,12 @@ class WindowGUI(base.GUI):
         # Rewards
         r_ax = self.agents['r_ax']
         rewards = self.stats.agents['X']['rewards']
-        x = list(range(len(rewards)))
+        rewards = np.array(rewards)
+        x, y = rewards[:, 0], rewards[:, 1]
 
-        self.agents['rd'].set_data(x, rewards)
+        self.agents['rd'].set_data(x, y)
 
-        msg = 'Total reward: {}'.format(rewards[-1])
+        msg = 'Total reward: {}'.format(y[-1])
         r_ax.set_title(msg)
 
         r_ax.relim()
@@ -123,11 +125,11 @@ class WindowGUI(base.GUI):
             mean_qs = self.stats.agents[mt]['mean_qs']
 
             if mean_qs:
-                agent_stats['mqd'].set_data(x, mean_qs)
+                mean_qs = np.array(mean_qs)
+                x, y = mean_qs[:, 0], mean_qs[:, 1]
+                agent_stats['mqd'].set_data(x, y)
 
-                msg = '[{}] Mean Q: {}'.format(
-                    mt, mean_qs[-1]
-                )
+                msg = '[{}] Mean Q: {}'.format(mt, y[-1])
                 q_ax.set_title(msg)
 
             q_ax.relim()

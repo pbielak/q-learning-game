@@ -17,11 +17,11 @@ def get_cfg():
                                    visualize=False)
 
     cfg.add_q_learning_agent(marker_type='X',
-                             learning_rate=0.001,
-                             discount_factor=0.6,
-                             eps=0.2,
+                             learning_rate=0.01,
+                             discount_factor=0.5,
+                             eps=0.1,
                              load_weights=False,
-                             save_weights=True,
+                             save_weights=False,
                              batch_mode=True)
 
     cfg.add_random_agent(marker_type='O')
