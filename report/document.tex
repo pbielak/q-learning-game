@@ -1,0 +1,49 @@
+\documentclass{article}
+
+\usepackage{polski}
+\usepackage[utf8]{inputenc}
+\usepackage{geometry}
+\usepackage{graphicx}
+\usepackage{float}
+\usepackage{multirow}
+\usepackage[newfloat]{minted}
+\usepackage{caption}
+\usepackage[svgnames]{xcolor}
+\usepackage{multirow}
+\usepackage{siunitx}
+\usepackage{amssymb}
+
+\newenvironment{code}{\captionsetup{type=listing}}{}
+\SetupFloatingEnvironment{listing}{name=Listing kodu}
+
+\geometry{margin=2cm}
+
+\author{Autorzy: Mateusz Gaweł (219256), Piotr Bielak (218137) \\
+        Prowadzący: mgr inż. Jan Jakubik}
+
+\title{\Huge Sprawozdanie \\ 
+       \Large Wybrane zagadnienia sztucznej inteligencji \\ 
+       \large \textbf{Uczenie ze wzmocnieniem}}
+
+\setminted{
+	bgcolor=LightGray
+}
+
+%\renewcommand{\figurename}{Listing kodu}
+
+\begin{document}
+
+\maketitle
+\clearpage
+
+\tableofcontents
+\clearpage
+
+\input{chapters/introduction.tex}
+\input{chapters/rl.tex}
+\input{chapters/sl.tex}
+\input{chapters/usage.tex}
+\input{chapters/analysis.tex}
+%\input{chapters/conclusions.tex}
+
+\end{document}
