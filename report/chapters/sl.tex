@@ -12,8 +12,21 @@ Następnie każdy z ruchów dodawany jest do słownika, gdzie każda z krotek je
 
 $$(X_{win}, O_{win}, Draw)$$
 
-Tak otrzymane krotki wartości przekształcane są tak, że \textbf{?}, aby każda z nich została przekształcona na pojedynczą wartość ze zbioru $\{-1, 1\}$.
+Tak otrzymane krotki wartości przekształcane są tak, że $\frac{x_{wins} - o_{wins} - 0.25 draws}{total\_games}$, aby każda z nich została przekształcona na pojedynczą wartość ze zbioru $\{-1, 1\}$.
 
 Dane, które zostały ostatecznie otrzymane, wykorzystane są do nauczania sieci neuronowej, która dla każdego stanu daje odpowiedź,czy ruch jest odpowiedni, czy nie.
+
+Architektura sieci jaką wykorzystano:
+\begin{itemize}
+	\item 36 neuronów w warstwie wejściowej (aktywacja ReLu);
+	\item 18 neuronów w warstwie ukrytej (również aktywacja ReLU);
+	\item 1 neuron wyjściowy (aktywacja $tanh$).
+\end{itemize}
+
+\begin{figure}[H]
+	\centering
+	\includegraphics[width=0.7\linewidth]{imgs/nn_plots}
+	\caption{Krzywa uczenia.}
+\end{figure}
 
 \pagebreak
